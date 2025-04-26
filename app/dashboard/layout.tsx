@@ -1,7 +1,7 @@
 "use client"
 
-import { type ReactNode, useState } from "react"
-import { usePathname } from "next/navigation"
+import { type ReactNode, useState, useEffect } from "react"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,6 +19,7 @@ import {
   CheckSquare,
   Users,
   Scale,
+  ArrowLeft,
   type LucideIcon,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -43,7 +44,19 @@ interface SidebarItemProps {
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
-  const currentRole = pathname.split("/")[2] // Extracts role from URL pattern: /dashboard/[role]
+  const router = useRouter()
+
+  // Check if we're on the universal dashboard or a role-specific dashboard
+  const pathSegments = pathname.split("/").filter(Boolean)
+  const isUniversalDashboard = pathSegments.length === 1 && pathSegments[0] === "dashboard"
+  const currentRole = pathSegments.length > 1 ? pathSegments[1] : ""
+
+  // If user tries to access a role-specific page without specifying a role, redirect to universal dashboard
+  useEffect(() => {
+    if (pathname !== "/dashboard" && !currentRole) {
+      router.push("/dashboard")
+    }
+  }, [pathname, currentRole, router])
 
   // Get navigation items based on role
   const navItems = getNavItemsByRole(currentRole)
@@ -87,26 +100,41 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </Avatar>
               <div>
                 <p className="font-medium">John Doe</p>
-                <p className="text-sm text-gray-500">{roleName}</p>
+                <p className="text-sm text-gray-500">{isUniversalDashboard ? "All Roles" : roleName}</p>
               </div>
             </div>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-2">
-            <ul className="space-y-1">
-              {navItems.map((item, index) => (
-                <li key={index}>
-                  <SidebarItem
-                    icon={item.icon}
-                    label={item.label}
-                    href={item.href}
-                    active={pathname === item.href}
-                    badge={item.badge}
-                  />
-                </li>
-              ))}
-            </ul>
+            {!isUniversalDashboard && (
+              <div className="mb-4">
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Link href="/dashboard">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to All Roles
+                  </Link>
+                </Button>
+              </div>
+            )}
+
+            {isUniversalDashboard ? (
+              <UniversalDashboardNav pathname={pathname} />
+            ) : (
+              <ul className="space-y-1">
+                {navItems.map((item, index) => (
+                  <li key={index}>
+                    <SidebarItem
+                      icon={item.icon}
+                      label={item.label}
+                      href={item.href}
+                      active={pathname === item.href}
+                      badge={item.badge}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
           </nav>
 
           {/* Sidebar footer */}
@@ -130,7 +158,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
                 <Menu className="h-5 w-5" />
               </Button>
-              <h1 className="text-xl font-semibold ml-2">{roleName} Dashboard</h1>
+              <h1 className="text-xl font-semibold ml-2">
+                {isUniversalDashboard ? "Role Selection" : `${roleName} Dashboard`}
+              </h1>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="relative">
@@ -174,6 +204,99 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4">{children}</main>
       </div>
+    </div>
+  )
+}
+
+function UniversalDashboardNav({ pathname }: { pathname: string }) {
+  const roles = [
+    {
+      role: "buyer",
+      label: "Buyer/Renter",
+      icon: Home,
+      href: "/dashboard/buyer",
+      color: "text-blue-600",
+    },
+    {
+      role: "owner",
+      label: "Property Owner",
+      icon: Building,
+      href: "/dashboard/owner",
+      color: "text-green-600",
+    },
+    {
+      role: "agent",
+      label: "Agent/Broker",
+      icon: Users,
+      href: "/dashboard/agent",
+      color: "text-purple-600",
+    },
+    {
+      role: "developer",
+      label: "Property Developer",
+      icon: Building,
+      href: "/dashboard/developer",
+      color: "text-amber-600",
+    },
+    {
+      role: "legal",
+      label: "Legal Advisor",
+      icon: Scale,
+      href: "/dashboard/legal",
+      color: "text-red-600",
+    },
+    {
+      role: "verifier",
+      label: "Property Verifier",
+      icon: CheckSquare,
+      href: "/dashboard/verifier",
+      color: "text-teal-600",
+    },
+  ]
+
+  return (
+    <div className="space-y-4">
+      <div className="px-3 py-2">
+        <h3 className="text-sm font-medium text-gray-500">Select Your Role</h3>
+      </div>
+      <ul className="space-y-1">
+        {roles.map((role) => (
+          <li key={role.role}>
+            <Link
+              href={role.href}
+              className={`flex items-center rounded-md px-3 py-2 text-sm font-medium ${
+                pathname === role.href ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <role.icon className={`mr-3 h-5 w-5 ${role.color}`} />
+              <span>{role.label}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="px-3 pt-5">
+        <h3 className="text-sm font-medium text-gray-500">Account</h3>
+      </div>
+      <ul className="space-y-1">
+        <li>
+          <Link
+            href="/dashboard/profile"
+            className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
+            <User className="mr-3 h-5 w-5 text-gray-500" />
+            <span>Profile</span>
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/dashboard/settings"
+            className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
+            <Settings className="mr-3 h-5 w-5 text-gray-500" />
+            <span>Settings</span>
+          </Link>
+        </li>
+      </ul>
     </div>
   )
 }

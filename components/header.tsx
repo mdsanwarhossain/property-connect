@@ -19,13 +19,25 @@ export default function Header() {
             Properties
           </Link>
           <Link href="/how-it-works" className="text-gray-600 hover:text-blue-600">
-            How It Works
+            User Manual
           </Link>
           <Link href="/about" className="text-gray-600 hover:text-blue-600">
             About Us
           </Link>
           <Link href="/admin" className="text-gray-600 hover:text-blue-600">
-            Admin
+            Add Property
+          </Link>
+          <Link href="/dashboard/buyer" className="text-gray-600 hover:text-blue-600">
+            Buyer
+          </Link>
+          <Link href="/dashboard/owner" className="text-gray-600 hover:text-blue-600">
+            Owner
+          </Link>
+          <Link href="/dashboard/verifier" className="text-gray-600 hover:text-blue-600">
+            Verifier
+          </Link>
+          <Link href="/dashboard/legal" className="text-gray-600 hover:text-blue-600">
+            Legal
           </Link>
         </nav>
 
