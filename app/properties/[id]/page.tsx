@@ -7,10 +7,14 @@ import type { Property } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Home, Tag, ArrowLeft, Phone, Mail, Calendar, AlertCircle } from "lucide-react"
+import { MapPin, Home, Tag, ArrowLeft, Calendar, AlertCircle, Shield, FileCheck } from "lucide-react"
 import Image from "next/image"
 import VerificationBadge from "@/components/verification-badge"
 import NeighborhoodInsights from "@/components/neighborhood-insights"
+import PropertyDetailsLegal from "@/components/property-details-legal"
+import MapIntegration from "@/components/map-integration"
+import ScheduleVisit from "@/components/schedule-visit"
+import PropertyRequestForm from "@/components/property-request-form"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function PropertyDetails() {
@@ -18,11 +22,36 @@ export default function PropertyDetails() {
   const router = useRouter()
   const { properties } = usePropertyContext()
   const [property, setProperty] = useState<Property | null>(null)
+  const [activeTab, setActiveTab] = useState("description")
+  const [requestType, setRequestType] = useState<"visit" | "buy" | "rent" | null>(null)
 
   useEffect(() => {
     const foundProperty = properties.find((p) => p.id === Number.parseInt(id as string))
     if (foundProperty) {
-      setProperty(foundProperty)
+      // Add mock legal documents and field team data for demo purposes
+      const enhancedProperty = {
+        ...foundProperty,
+        legalDocuments: foundProperty.verified
+          ? {
+              ownershipVerified: true,
+              verifiedBy: "Fatima Rahman",
+              verificationDate: "2025-01-15",
+              documentTypes: ["Ownership Deed", "Tax Clearance", "Mutation", "Building Approval"],
+            }
+          : {
+              ownershipVerified: false,
+              documentTypes: ["Ownership Deed (Pending)"],
+            },
+        fieldTeam: foundProperty.verified
+          ? {
+              verifier: "Ahmed Khan",
+              legalAdvisor: "Fatima Rahman",
+              salesAgent: "Rahim Chowdhury",
+              photographer: "Nusrat Jahan",
+            }
+          : undefined,
+      }
+      setProperty(enhancedProperty)
     }
   }, [id, properties])
 
@@ -40,7 +69,7 @@ export default function PropertyDetails() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <Button onClick={() => router.push("/")} variant="outline" className="mb-6">
+      <Button onClick={() => router.push("/properties")} variant="outline" className="mb-6">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Properties
       </Button>
@@ -143,11 +172,16 @@ export default function PropertyDetails() {
             </Card>
           </div>
 
-          <Tabs defaultValue="description" className="mb-8">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs defaultValue="description" className="mb-8" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="neighborhood">Neighborhood</TabsTrigger>
+              <TabsTrigger value="location">Location</TabsTrigger>
+              <TabsTrigger value="legal" className="flex items-center gap-1">
+                <Shield className="h-4 w-4" />
+                <span>Legal</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="description" className="pt-4">
@@ -181,11 +215,19 @@ export default function PropertyDetails() {
             <TabsContent value="neighborhood" className="pt-4">
               <NeighborhoodInsights data={property.neighborhood} location={property.location.split(",")[0]} />
             </TabsContent>
+
+            <TabsContent value="location" className="pt-4">
+              <MapIntegration singleProperty={property} height="400px" />
+            </TabsContent>
+
+            <TabsContent value="legal" className="pt-4">
+              <PropertyDetailsLegal legalDocuments={property.legalDocuments} fieldTeam={property.fieldTeam} />
+            </TabsContent>
           </Tabs>
         </div>
 
         <div>
-          <Card className="sticky top-6">
+          <Card className="sticky top-6 mb-6">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center text-blue-600 font-bold text-2xl">
@@ -201,53 +243,45 @@ export default function PropertyDetails() {
                     <Image src="/placeholder.svg?height=48&width=48" alt="Agent" fill className="object-cover" />
                   </div>
                   <div>
-                    <p className="font-medium">John Doe</p>
+                    <p className="font-medium">{property.fieldTeam?.salesAgent || "Rahim Chowdhury"}</p>
                     <p className="text-sm text-gray-500">Property Agent</p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <Button className="w-full">
-                  <Phone className="mr-2 h-4 w-4" />
-                  Call Agent
+                <Button className="w-full" onClick={() => setRequestType(requestType === "visit" ? null : "visit")}>
+                  Schedule a Visit
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Email Agent
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setRequestType(requestType === "buy" ? null : "buy")}
+                >
+                  Request to Buy
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setRequestType(requestType === "rent" ? null : "rent")}
+                >
+                  Request to Rent
                 </Button>
               </div>
 
               <div className="mt-6 pt-6 border-t">
-                <h3 className="font-semibold mb-3">Coming Soon</h3>
+                <h3 className="font-semibold mb-3 flex items-center">
+                  <Shield className="h-5 w-5 text-blue-600 mr-2" />
+                  Fraud Prevention
+                </h3>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-blue-600"
-                    >
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                      <path d="M8 14h.01" />
-                      <path d="M12 14h.01" />
-                      <path d="M16 14h.01" />
-                      <path d="M8 18h.01" />
-                      <path d="M12 18h.01" />
-                      <path d="M16 18h.01" />
-                    </svg>
-                    <span className="text-sm">Easy Rent Management</span>
+                  <div className="flex items-start gap-2 text-gray-600">
+                    <FileCheck className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm">Digital contract with OTP verification</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-start gap-2 text-gray-600">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -258,19 +292,24 @@ export default function PropertyDetails() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="text-blue-600"
+                      className="text-green-600 mt-0.5 flex-shrink-0"
                     >
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      <path d="M12 7v.01" />
-                      <path d="M16 7v.01" />
-                      <path d="M8 7v.01" />
                     </svg>
-                    <span className="text-sm">24/7 Support</span>
+                    <div>
+                      <p className="text-sm">In-app chat with phone masking</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {requestType === "visit" && <ScheduleVisit property={property} />}
+
+          {requestType === "buy" && <PropertyRequestForm property={property} type="buy" />}
+
+          {requestType === "rent" && <PropertyRequestForm property={property} type="rent" />}
         </div>
       </div>
     </main>

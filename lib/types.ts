@@ -20,4 +20,36 @@ export interface Property {
     transitRating: number
     schoolsRating: number
   }
+  legalDocuments?: {
+    ownershipVerified: boolean
+    verifiedBy?: string
+    verificationDate?: string
+    documentTypes: string[]
+  }
+  fieldTeam?: {
+    verifier?: string
+    legalAdvisor?: string
+    salesAgent?: string
+    photographer?: string
+  }
+}
+
+export interface FieldTeamMember {
+  id: number
+  name: string
+  role: string
+  email: string
+  phone: string
+  image: string
+  assignedProperties: number[]
+}
+
+export interface LegalDocument {
+  id: number
+  propertyId: number
+  documentType: string
+  verified: boolean
+  verifiedBy: string
+  verificationDate: string
+  fileUrl: string
 }
