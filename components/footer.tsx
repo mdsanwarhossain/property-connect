@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Home, Mail, Phone, Instagram, Facebook, Twitter, FileText, Shield, Scale } from "lucide-react"
+import * as https from "https";
 
 export default function Footer() {
   return (
@@ -111,7 +112,7 @@ export default function Footer() {
 
         <div className="border-t mt-12 pt-6 text-center text-gray-500">
           <p>© {new Date().getFullYear()} Property Connect. All rights reserved.</p>
-          <p className="text-sm mt-1">Institute of Information Technology, NSTU</p>
+          <p className="text-sm mt-1">Developed By- <a href='www.github.com/mdsanwarhossain/property-connect'>Md. Sanwar Hossain (Fronted Developer)</a> Institute of Information Technology, NSTU</p>
         </div>
       </div>
     </footer>

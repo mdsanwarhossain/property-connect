@@ -24,9 +24,9 @@ export default function Header() {
           <Link href="/about" className="text-gray-600 hover:text-blue-600">
             About Us
           </Link>
-          <Link href="/admin" className="text-gray-600 hover:text-blue-600">
-            Add Property
-          </Link>
+          {/*<Link href="/admin" className="text-gray-600 hover:text-blue-600">*/}
+          {/*  Add Property*/}
+          {/*</Link>*/}
           <Link href="/dashboard/buyer" className="text-gray-600 hover:text-blue-600">
             Buyer
           </Link>
